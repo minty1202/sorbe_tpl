@@ -1,0 +1,13 @@
+[config]
+default_to_workspace = false
+
+[tasks.run-ex]
+command = "cargo"
+args = ["run", "--example", "playground"]
+
+[tasks.test]
+command = "cargo"
+args = [
+  "nextest", "run", "--workspace",
+  "--status-level", "all", "--test-threads=1", "--no-tests=pass"
+]

@@ -1,0 +1,18 @@
+[package]
+name = "sorbe_tpl"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = [
+  "deserializer",
+  "kernel",
+  "lexer",
+  "parser",
+]
+
+[workspace.dependencies]
+deserializer = { path = "deserializer" }
+kernel = { path = "kernel" }
+lexer = { path = "lexer" }
+parser = { path = "parser" }
