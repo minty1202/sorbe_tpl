@@ -16,3 +16,11 @@ deserializer = { path = "deserializer" }
 kernel = { path = "kernel" }
 lexer = { path = "lexer" }
 parser = { path = "parser" }
+
+thiserror = "2.0.12"
+
+[dependencies]
+deserializer.workspace = true
+kernel.workspace = true
+lexer.workspace = true
+parser.workspace = true

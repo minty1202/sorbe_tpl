@@ -1,14 +1,37 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod emit;
+mod peekable_extend;
+mod symbol;
+use symbol::{BlockToken, SingleToken, SymbolChar};
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use std::convert::TryFrom;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+use kernel::{error::TokenError, token::Token, tokenize::Tokenize};
+
+pub struct Lexer;
+
+impl Tokenize for Lexer {
+    fn tokenize(&self, input: &str) -> Result<Vec<Token>, TokenError> {
+        let mut tokens = Vec::new();
+        let mut chars = input.chars().peekable();
+
+        while let Some(c) = chars.next() {
+            if SymbolChar::is_skip_char(c) {
+                continue;
+            }
+
+            match SymbolChar::try_from(c) {
+                Ok(symbol) => {
+                    if let Some(token) = symbol.emit_token(&mut chars)? {
+                        tokens.push(token);
+                    }
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+        tokens.push(Token::Eof);
+
+        Ok(tokens)
     }
 }
