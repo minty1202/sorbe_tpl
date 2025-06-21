@@ -9,5 +9,9 @@ args = ["run", "--example", "playground"]
 command = "cargo"
 args = [
   "nextest", "run", "--workspace",
-  "--status-level", "all", "--test-threads=1", "--no-tests=pass"
+  "--status-level", "all", "--no-tests=pass",
 ]
+
+[tasks.test-pkg]
+command = "cargo"
+args = ["nextest", "run", "--package", "${@}", "--status-level", "all", "--no-tests=pass"]

@@ -18,6 +18,7 @@ lexer = { path = "lexer" }
 parser = { path = "parser" }
 
 thiserror = "2.0.12"
+indexmap = "2.9.0"
 
 [dependencies]
 deserializer.workspace = true
