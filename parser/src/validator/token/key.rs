@@ -1,13 +1,12 @@
 use super::TokenValidator;
-use kernel::error::{SyntaxKeyValidationError, SyntaxValidationError};
+use kernel::error::{KeyError, TokenValidationError};
 use kernel::token::Token;
 
-use SyntaxKeyValidationError as KeyError;
-use SyntaxValidationError as BaseError;
 use Token::*;
+use TokenValidationError as BaseError;
 
 impl TokenValidator {
-    pub fn validate_key(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    pub fn validate_key(tokens: &[Token]) -> Result<(), BaseError> {
         let mut iter = tokens.iter();
         loop {
             let key_part = match iter.next() {
@@ -33,7 +32,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_start_with_hyphen(key_part: &str) -> Result<(), SyntaxValidationError> {
+    fn validate_start_with_hyphen(key_part: &str) -> Result<(), BaseError> {
         if key_part.starts_with('-') {
             return Err(BaseError::Key(KeyError::InvalidKeyStartsWithHyphen {
                 key_part: key_part.to_string(),
@@ -42,7 +41,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_ends_with_hyphen(key_part: &str) -> Result<(), SyntaxValidationError> {
+    fn validate_ends_with_hyphen(key_part: &str) -> Result<(), BaseError> {
         if key_part.ends_with('-') {
             return Err(BaseError::Key(KeyError::InvalidKeyEndsWithHyphen {
                 key_part: key_part.to_string(),
@@ -51,7 +50,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_first_char_is_not_numeric(key_part: &str) -> Result<(), SyntaxValidationError> {
+    fn validate_first_char_is_not_numeric(key_part: &str) -> Result<(), BaseError> {
         if key_part.chars().next().is_some_and(|c| c.is_numeric()) {
             return Err(BaseError::Key(KeyError::KeyCannotBeNumeric {
                 key_part: key_part.to_string(),
@@ -64,9 +63,8 @@ impl TokenValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use SyntaxKeyValidationError as KE;
-    use SyntaxValidationError::Key as KeyError;
-    use kernel::error::{SyntaxKeyValidationError, SyntaxValidationError};
+    use TokenValidationError::Key as KeyError;
+    use kernel::error::{KeyError as KE, TokenValidationError};
 
     #[test]
     fn test_valid() {

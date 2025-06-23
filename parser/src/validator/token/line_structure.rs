@@ -1,12 +1,12 @@
 use super::TokenValidator;
-use SyntaxLineStructureValidationError as LineError;
-use SyntaxValidationError as BaseError;
+use LineStructureError as LineError;
 use Token::*;
-use kernel::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
+use TokenValidationError as BaseError;
+use kernel::error::{LineStructureError, TokenValidationError};
 use kernel::token::Token;
 
 impl TokenValidator {
-    pub fn validate_line_structure(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    pub fn validate_line_structure(tokens: &[Token]) -> Result<(), BaseError> {
         Self::validate_equal_count(tokens)?;
 
         let (left_side, right_side) = Self::split_side_by_side(tokens)?;
@@ -17,7 +17,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_equal_count(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_equal_count(tokens: &[Token]) -> Result<(), BaseError> {
         let equal_count = tokens.iter().filter(|t| matches!(t, Token::Equal)).count();
         if equal_count == 0 {
             return Err(BaseError::LineStructure(LineError::MissingEquals));
@@ -28,7 +28,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_left_side_last(left_side: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_left_side_last(left_side: &[Token]) -> Result<(), BaseError> {
         match left_side.last() {
             Some(Ident(_)) => {}
             Some(_) => return Err(BaseError::LineStructure(LineError::LeftSideMustBeIdent)),
@@ -37,7 +37,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_right_side_last(right_side: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_right_side_last(right_side: &[Token]) -> Result<(), BaseError> {
         match right_side.last() {
             Some(Ident(_) | QuotedIdent(_)) => {}
             None => {}
@@ -50,7 +50,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn split_side_by_side(tokens: &[Token]) -> Result<(&[Token], &[Token]), SyntaxValidationError> {
+    fn split_side_by_side(tokens: &[Token]) -> Result<(&[Token], &[Token]), BaseError> {
         let equal_pos = tokens
             .iter()
             .position(|t| matches!(t, Token::Equal))
@@ -65,9 +65,8 @@ impl TokenValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use SyntaxLineStructureValidationError as LE;
-    use SyntaxValidationError::LineStructure as LineStructureError;
-    use kernel::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
+    use TokenValidationError::LineStructure as LineStructureError;
+    use kernel::error::{LineStructureError as LE, TokenValidationError};
 
     #[test]
     fn test_valid() {

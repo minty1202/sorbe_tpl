@@ -1,9 +1,7 @@
 use super::TokenValidator;
 use From;
-use SyntaxValidationError as BaseError;
-use SyntaxValueValidationError as ValueError;
 use Token::*;
-use kernel::error::{SyntaxValidationError, SyntaxValueValidationError};
+use kernel::error::{TokenValidationError as BaseError, ValueError};
 use kernel::token::Token;
 
 enum InnerPlaneToken {
@@ -27,7 +25,7 @@ impl From<&Token> for InnerPlaneToken {
 }
 
 impl TokenValidator {
-    pub fn validate_value(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    pub fn validate_value(tokens: &[Token]) -> Result<(), BaseError> {
         if tokens.is_empty() {
             return Ok(());
         }
@@ -52,14 +50,14 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_single_value(token: Token) -> Result<(), SyntaxValidationError> {
+    fn validate_single_value(token: Token) -> Result<(), BaseError> {
         if token == Dot {
             return Err(BaseError::Value(ValueError::InvalidValueFormat));
         }
         Ok(())
     }
 
-    fn validate_mixed_idents(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_mixed_idents(tokens: &[Token]) -> Result<(), BaseError> {
         let has_simple_ident = tokens.iter().any(|t| matches!(t, Ident(_)));
         let has_quoted_ident = tokens.iter().any(|t| matches!(t, QuotedIdent(_)));
         if has_simple_ident && has_quoted_ident {
@@ -71,7 +69,7 @@ impl TokenValidator {
 
     fn validate_mixed_dot_and_non_numeric_idents(
         inner_simple_tokens: &[InnerPlaneToken],
-    ) -> Result<(), SyntaxValidationError> {
+    ) -> Result<(), BaseError> {
         let has_dot = inner_simple_tokens
             .iter()
             .any(|c| matches!(c, InnerPlaneToken::Dot));
@@ -88,7 +86,7 @@ impl TokenValidator {
 
     fn validate_mixed_non_numeric_and_numeric_idents(
         inner_simple_tokens: &[InnerPlaneToken],
-    ) -> Result<(), SyntaxValidationError> {
+    ) -> Result<(), BaseError> {
         let has_numeric = inner_simple_tokens
             .iter()
             .any(|c| matches!(c, InnerPlaneToken::Numeric));
@@ -103,7 +101,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_multiple_quoted_idents(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_multiple_quoted_idents(tokens: &[Token]) -> Result<(), BaseError> {
         let quoted_ident_count = tokens
             .iter()
             .filter(|t| matches!(t, QuotedIdent(_)))
@@ -115,7 +113,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_multiple_dots(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_multiple_dots(tokens: &[Token]) -> Result<(), BaseError> {
         let dot_count = tokens.iter().filter(|t| matches!(t, Dot)).count();
         if dot_count > 1 {
             return Err(BaseError::Value(ValueError::MultipleDots));
@@ -126,7 +124,7 @@ impl TokenValidator {
 
     fn validate_multiple_non_numeric_idents(
         inner_simple_tokens: &[InnerPlaneToken],
-    ) -> Result<(), SyntaxValidationError> {
+    ) -> Result<(), BaseError> {
         let simple_string_idents_count = inner_simple_tokens
             .iter()
             .filter(|c| matches!(c, InnerPlaneToken::String))
@@ -138,7 +136,7 @@ impl TokenValidator {
         Ok(())
     }
 
-    fn validate_ending_dot(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
+    fn validate_ending_dot(tokens: &[Token]) -> Result<(), BaseError> {
         if tokens.last() == Some(&Dot) {
             return Err(BaseError::Value(ValueError::InvalidValueFormat));
         }
@@ -147,7 +145,7 @@ impl TokenValidator {
 
     fn validate_consecutive_numeric_idents(
         inner_simple_tokens: &[InnerPlaneToken],
-    ) -> Result<(), SyntaxValidationError> {
+    ) -> Result<(), BaseError> {
         for i in 0..inner_simple_tokens.len() {
             if matches!(inner_simple_tokens[i], InnerPlaneToken::Numeric) {
                 if let Some(InnerPlaneToken::Numeric) = inner_simple_tokens.get(i + 1) {
@@ -162,9 +160,8 @@ impl TokenValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use SyntaxValidationError::Value as ValueError;
-    use SyntaxValueValidationError as VE;
-    use kernel::error::{SyntaxValidationError, SyntaxValueValidationError};
+    use TokenValidationError::Value as ValueError;
+    use kernel::error::{TokenValidationError, ValueError as VE};
 
     #[test]
     fn test_valid() {

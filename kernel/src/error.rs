@@ -4,8 +4,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("token error: {0}")]
     Token(TokenError),
-    #[error("Syntax validation error: {0}")]
-    SyntaxValidation(SyntaxValidationError),
+    #[error("validation error: {0}")]
+    Validation(ValidationError),
 }
 
 #[derive(Debug, Error)]
@@ -19,22 +19,28 @@ pub enum TokenError {
 }
 
 #[derive(Debug, Error)]
-pub enum SyntaxValidationError {
+pub enum ValidationError {
+    #[error("Token validation error: {0}")]
+    Token(TokenValidationError),
+}
+
+#[derive(Debug, Error)]
+pub enum TokenValidationError {
     #[error("key validation error: {0}")]
-    Key(#[from] SyntaxKeyValidationError),
+    Key(#[from] KeyError),
 
     #[error("value validation error: {0}")]
-    Value(#[from] SyntaxValueValidationError),
+    Value(#[from] ValueError),
 
     #[error("Line structure validation error: {0}")]
-    LineStructure(#[from] SyntaxLineStructureValidationError),
+    LineStructure(#[from] LineStructureError),
 
     #[error("Internal validation error: {0}")]
     Internal(String),
 }
 
 #[derive(Debug, Error)]
-pub enum SyntaxKeyValidationError {
+pub enum KeyError {
     #[error("Key cannot start with hyphen: '{key_part}'")]
     InvalidKeyStartsWithHyphen { key_part: String },
 
@@ -49,7 +55,7 @@ pub enum SyntaxKeyValidationError {
 }
 
 #[derive(Debug, Error)]
-pub enum SyntaxValueValidationError {
+pub enum ValueError {
     #[error("Value cannot contain multiple non-numeric identifiers")]
     MultipleNonNumericIdents,
 
@@ -67,7 +73,7 @@ pub enum SyntaxValueValidationError {
 }
 
 #[derive(Debug, Error)]
-pub enum SyntaxLineStructureValidationError {
+pub enum LineStructureError {
     #[error("Missing '=' in line")]
     MissingEquals,
 

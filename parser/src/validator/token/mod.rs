@@ -3,13 +3,13 @@ mod line_structure;
 mod value;
 
 use crate::syntax::{Pattern, Syntax, SyntaxValue};
-use kernel::error::SyntaxValidationError;
+use kernel::error::TokenValidationError;
 use kernel::token::Token;
 
 pub struct TokenValidator;
 
 impl TokenValidator {
-    pub fn validate(tokens: Vec<Token>) -> Result<Syntax, SyntaxValidationError> {
+    pub fn validate(tokens: Vec<Token>) -> Result<Syntax, TokenValidationError> {
         let token_lines: Vec<Vec<Token>> = tokens
             .split(|token| matches!(token, Token::Newline | Token::Eof))
             .map(|line| line.to_vec())
@@ -44,9 +44,7 @@ impl TokenValidator {
         Ok(Syntax { patterns })
     }
 
-    fn split_key_value(
-        tokens: &[Token],
-    ) -> Result<(Vec<Token>, Vec<Token>), SyntaxValidationError> {
+    fn split_key_value(tokens: &[Token]) -> Result<(Vec<Token>, Vec<Token>), TokenValidationError> {
         let mut key_tokens = Vec::new();
         let mut value_tokens = Vec::new();
 
@@ -75,7 +73,7 @@ impl TokenValidator {
             .collect()
     }
 
-    fn build_value(value_tokens: &[Token]) -> Result<SyntaxValue, SyntaxValidationError> {
+    fn build_value(value_tokens: &[Token]) -> Result<SyntaxValue, TokenValidationError> {
         if value_tokens.is_empty() {
             return Ok(SyntaxValue::Plain(String::new()));
         }
@@ -94,7 +92,7 @@ impl TokenValidator {
                 Token::Ident(name) => result.push_str(name),
                 Token::Dot => result.push('.'),
                 _ => {
-                    return Err(SyntaxValidationError::Internal(
+                    return Err(TokenValidationError::Internal(
                         "Unexpected token in value building".to_string(),
                     ));
                 }
