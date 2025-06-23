@@ -46,6 +46,9 @@ dependencies = [
 [[package]]
 name = "parser"
 version = "0.1.0"
+dependencies = [
+ "kernel",
+]
 
 [[package]]
 name = "proc-macro2"

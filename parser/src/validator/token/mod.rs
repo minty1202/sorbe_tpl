@@ -2,13 +2,13 @@ mod key;
 mod line_structure;
 mod value;
 
-use crate::error::SyntaxValidationError;
 use crate::syntax::{Pattern, Syntax, SyntaxValue};
-use crate::token::Token;
+use kernel::error::SyntaxValidationError;
+use kernel::token::Token;
 
-pub struct SyntaxValidator;
+pub struct TokenValidator;
 
-impl SyntaxValidator {
+impl TokenValidator {
     pub fn validate(tokens: Vec<Token>) -> Result<Syntax, SyntaxValidationError> {
         let token_lines: Vec<Vec<Token>> = tokens
             .split(|token| matches!(token, Token::Newline | Token::Eof))
@@ -108,7 +108,7 @@ impl SyntaxValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::token::Token;
+    use kernel::token::Token;
 
     #[test]
     fn test_syntax_validator() {
@@ -124,7 +124,7 @@ mod tests {
             Token::Eof,
         ];
 
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
 
         assert_eq!(syntax.patterns.len(), 2);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key1".to_string()]);
@@ -139,7 +139,7 @@ mod tests {
         );
 
         let tokens: Vec<Token> = vec![Token::Eof];
-        let empty_syntax = SyntaxValidator::validate(tokens).unwrap();
+        let empty_syntax = TokenValidator::validate(tokens).unwrap();
         assert!(empty_syntax.patterns.is_empty());
 
         let tokens = vec![
@@ -150,7 +150,7 @@ mod tests {
             Token::Ident("value1".to_string()),
             Token::Newline,
         ];
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(
             syntax.patterns[0].key_parts,
@@ -167,7 +167,7 @@ mod tests {
             Token::QuotedIdent("value1".to_string()),
             Token::Newline,
         ];
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key".to_string()]);
         assert_eq!(
@@ -184,7 +184,7 @@ mod tests {
             Token::Newline,
         ];
 
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key".to_string()]);
         assert_eq!(
@@ -199,7 +199,7 @@ mod tests {
             Token::Ident("1".to_string()),
             Token::Newline,
         ];
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key".to_string()]);
         assert_eq!(
@@ -212,7 +212,7 @@ mod tests {
             Token::Equal,
             Token::Newline,
         ];
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key".to_string()]);
         assert_eq!(syntax.patterns[0].value, SyntaxValue::Plain("".to_string()));
@@ -223,7 +223,7 @@ mod tests {
             Token::Ident("-1".to_string()),
             Token::Newline,
         ];
-        let syntax = SyntaxValidator::validate(tokens).unwrap();
+        let syntax = TokenValidator::validate(tokens).unwrap();
         assert_eq!(syntax.patterns.len(), 1);
         assert_eq!(syntax.patterns[0].key_parts, vec!["key".to_string()]);
         assert_eq!(
@@ -235,6 +235,6 @@ mod tests {
     #[test]
     fn test_invalid_syntax() {
         let invalid_tokens = vec![Token::Ident("invalid".to_string()), Token::Newline];
-        assert!(SyntaxValidator::validate(invalid_tokens).is_err());
+        assert!(TokenValidator::validate(invalid_tokens).is_err());
     }
 }

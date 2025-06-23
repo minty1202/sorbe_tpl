@@ -1,11 +1,11 @@
-use super::SyntaxValidator;
-use crate::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
-use crate::token::Token;
+use super::TokenValidator;
 use SyntaxLineStructureValidationError as LineError;
 use SyntaxValidationError as BaseError;
 use Token::*;
+use kernel::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
+use kernel::token::Token;
 
-impl SyntaxValidator {
+impl TokenValidator {
     pub fn validate_line_structure(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
         Self::validate_equal_count(tokens)?;
 
@@ -65,14 +65,14 @@ impl SyntaxValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
     use SyntaxLineStructureValidationError as LE;
     use SyntaxValidationError::LineStructure as LineStructureError;
+    use kernel::error::{SyntaxLineStructureValidationError, SyntaxValidationError};
 
     #[test]
     fn test_valid() {
         let tokens = vec![Ident("key".to_string()), Equal, Ident("value".to_string())];
-        assert!(SyntaxValidator::validate_line_structure(&tokens).is_ok());
+        assert!(TokenValidator::validate_line_structure(&tokens).is_ok());
 
         let tokens = vec![
             Ident("key".to_string()),
@@ -82,14 +82,14 @@ mod tests {
             Ident("value".to_string()),
         ];
 
-        assert!(SyntaxValidator::validate_line_structure(&tokens).is_ok());
+        assert!(TokenValidator::validate_line_structure(&tokens).is_ok());
 
         let tokens = vec![
             Ident("key".to_string()),
             Equal,
             QuotedIdent("value".to_string()),
         ];
-        assert!(SyntaxValidator::validate_line_structure(&tokens).is_ok());
+        assert!(TokenValidator::validate_line_structure(&tokens).is_ok());
     }
 
     mod invalid {
@@ -98,7 +98,7 @@ mod tests {
         #[test]
         fn test_missing_equal() {
             let tokens = vec![Ident("key".to_string()), Ident("value".to_string())];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::MissingEquals)
@@ -114,7 +114,7 @@ mod tests {
                 Equal,
                 Ident("value2".to_string()),
             ];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::MultipleEquals)
@@ -127,7 +127,7 @@ mod tests {
                 Ident("value".to_string()),
             ];
 
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::MultipleEquals)
@@ -137,7 +137,7 @@ mod tests {
         #[test]
         fn test_missing_left_side() {
             let tokens = vec![Equal, Ident("value".to_string()), Newline];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::MissingLeftSide)
@@ -152,14 +152,14 @@ mod tests {
                 Ident("value".to_string()),
                 Newline,
             ];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::LeftSideMustBeIdent)
             ));
 
             let tokens = vec![Dot, Equal, Ident("value".to_string()), Newline];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::LeftSideMustBeIdent)
@@ -169,7 +169,7 @@ mod tests {
         #[test]
         fn test_right_side_contains_invalid_tokens() {
             let tokens = vec![Ident("key".to_string()), Equal, Dot, Newline];
-            let result = SyntaxValidator::validate_line_structure(&tokens);
+            let result = TokenValidator::validate_line_structure(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 LineStructureError(LE::RightSideContainsInvalidTokens)

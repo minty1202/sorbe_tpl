@@ -1,12 +1,12 @@
-use super::SyntaxValidator;
-use crate::error::{SyntaxKeyValidationError, SyntaxValidationError};
-use crate::token::Token;
+use super::TokenValidator;
+use kernel::error::{SyntaxKeyValidationError, SyntaxValidationError};
+use kernel::token::Token;
 
 use SyntaxKeyValidationError as KeyError;
 use SyntaxValidationError as BaseError;
 use Token::*;
 
-impl SyntaxValidator {
+impl TokenValidator {
     pub fn validate_key(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
         let mut iter = tokens.iter();
         loop {
@@ -64,23 +64,23 @@ impl SyntaxValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::{SyntaxKeyValidationError, SyntaxValidationError};
     use SyntaxKeyValidationError as KE;
     use SyntaxValidationError::Key as KeyError;
+    use kernel::error::{SyntaxKeyValidationError, SyntaxValidationError};
 
     #[test]
     fn test_valid() {
         let tokens = vec![Ident("key".to_string())];
-        assert!(SyntaxValidator::validate_key(&tokens).is_ok());
+        assert!(TokenValidator::validate_key(&tokens).is_ok());
 
         let tokens_with_hyphen = vec![Ident("key-subkey".to_string())];
-        assert!(SyntaxValidator::validate_key(&tokens_with_hyphen).is_ok());
+        assert!(TokenValidator::validate_key(&tokens_with_hyphen).is_ok());
 
         let tokens_with_numeric = vec![Ident("key123".to_string())];
-        assert!(SyntaxValidator::validate_key(&tokens_with_numeric).is_ok());
+        assert!(TokenValidator::validate_key(&tokens_with_numeric).is_ok());
 
         let tokens_with_dot = vec![Ident("key".to_string()), Dot, Ident("subkey".to_string())];
-        assert!(SyntaxValidator::validate_key(&tokens_with_dot).is_ok());
+        assert!(TokenValidator::validate_key(&tokens_with_dot).is_ok());
 
         let tokens_with_multiple_dots = vec![
             Ident("key".to_string()),
@@ -89,7 +89,7 @@ mod tests {
             Dot,
             Ident("subsubkey".to_string()),
         ];
-        assert!(SyntaxValidator::validate_key(&tokens_with_multiple_dots).is_ok());
+        assert!(TokenValidator::validate_key(&tokens_with_multiple_dots).is_ok());
     }
 
     mod invalid {
@@ -98,7 +98,7 @@ mod tests {
         #[test]
         fn test_key_starts_with_hyphen() {
             let tokens = vec![Ident("-key".to_string())];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(matches!(
                 result,
                 Err(KeyError(KE::InvalidKeyStartsWithHyphen { .. }))
@@ -108,7 +108,7 @@ mod tests {
         #[test]
         fn test_key_with_trailing_hyphen() {
             let tokens = vec![Ident("key-".to_string())];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 KeyError(KE::InvalidKeyEndsWithHyphen { .. })
@@ -118,7 +118,7 @@ mod tests {
         #[test]
         fn test_dot_after_dot() {
             let tokens = vec![Ident("key".to_string()), Dot, Dot];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 KeyError(KE::UnexpectedTokenInKey)
@@ -128,7 +128,7 @@ mod tests {
         #[test]
         fn test_unexpected_token_in_key() {
             let tokens = vec![Ident("key".to_string()), Ident("subkey".to_string())];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 KeyError(KE::UnexpectedTokenInKey)
@@ -138,7 +138,7 @@ mod tests {
         #[test]
         fn test_key_with_trailing_dot() {
             let tokens = vec![Ident("key".to_string()), Dot];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(result.is_err());
             assert!(matches!(
                 result.unwrap_err(),
@@ -149,7 +149,7 @@ mod tests {
         #[test]
         fn test_numeric_key() {
             let tokens = vec![Ident("123".to_string())];
-            let result = SyntaxValidator::validate_key(&tokens);
+            let result = TokenValidator::validate_key(&tokens);
             assert!(matches!(
                 result.unwrap_err(),
                 KeyError(KE::KeyCannotBeNumeric { key_part })

@@ -1,10 +1,10 @@
-use super::SyntaxValidator;
-use crate::error::{SyntaxValidationError, SyntaxValueValidationError};
-use crate::token::Token;
+use super::TokenValidator;
 use From;
 use SyntaxValidationError as BaseError;
 use SyntaxValueValidationError as ValueError;
 use Token::*;
+use kernel::error::{SyntaxValidationError, SyntaxValueValidationError};
+use kernel::token::Token;
 
 enum InnerPlaneToken {
     String,
@@ -26,7 +26,7 @@ impl From<&Token> for InnerPlaneToken {
     }
 }
 
-impl SyntaxValidator {
+impl TokenValidator {
     pub fn validate_value(tokens: &[Token]) -> Result<(), SyntaxValidationError> {
         if tokens.is_empty() {
             return Ok(());
@@ -162,29 +162,29 @@ impl SyntaxValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::{SyntaxValidationError, SyntaxValueValidationError};
     use SyntaxValidationError::Value as ValueError;
     use SyntaxValueValidationError as VE;
+    use kernel::error::{SyntaxValidationError, SyntaxValueValidationError};
 
     #[test]
     fn test_valid() {
         let tokens = vec![Ident("value".to_string())];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
 
         let tokens = vec![QuotedIdent("value".to_string())];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
 
         let tokens = vec![Ident("123".to_string())];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
 
         let tokens = vec![Ident("123".to_string()), Dot, Ident("456".to_string())];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
 
         let tokens = vec![Dot, Ident("123".to_string())];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
 
         let tokens: Vec<Token> = vec![];
-        assert!(SyntaxValidator::validate_value(&tokens).is_ok());
+        assert!(TokenValidator::validate_value(&tokens).is_ok());
     }
 
     mod invalid {
@@ -193,7 +193,7 @@ mod tests {
         #[test]
         fn test_multiple_non_numeric_idents() {
             let tokens = vec![Ident("value1".to_string()), Ident("value2".to_string())];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(
                 result,
                 Err(ValueError(VE::MultipleNonNumericIdents))
@@ -206,7 +206,7 @@ mod tests {
                 QuotedIdent("value1".to_string()),
                 QuotedIdent("value2".to_string()),
             ];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(result, Err(ValueError(VE::MultipleQuotedIdents))));
         }
 
@@ -216,22 +216,22 @@ mod tests {
                 Ident("value1".to_string()),
                 QuotedIdent("value2".to_string()),
             ];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(result, Err(ValueError(VE::MultipleMixedIdents))));
 
             let tokens = vec![Ident("123".to_string()), QuotedIdent("value2".to_string())];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(result, Err(ValueError(VE::MultipleMixedIdents))));
 
             let tokens = vec![QuotedIdent("value2".to_string()), Ident("123".to_string())];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(result, Err(ValueError(VE::MultipleMixedIdents))));
 
             let tokens = vec![
                 QuotedIdent("value2".to_string()),
                 Ident("value1".to_string()),
             ];
-            let result = SyntaxValidator::validate_value(&tokens);
+            let result = TokenValidator::validate_value(&tokens);
             assert!(matches!(result, Err(ValueError(VE::MultipleMixedIdents))));
         }
     }
@@ -245,38 +245,38 @@ mod tests {
             Dot,
             Ident("789".to_string()),
         ];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::MultipleDots))));
 
         let tokens = vec![Ident("123".to_string()), Dot, Dot, Ident("789".to_string())];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::MultipleDots))));
 
         let tokens = vec![Dot, Dot, Ident("789".to_string())];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::MultipleDots))));
 
         let tokens = vec![Dot, Dot];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::MultipleDots))));
     }
 
     #[test]
     fn test_invalid_value_format() {
         let tokens = vec![Dot];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::InvalidValueFormat))));
 
         let tokens = vec![Ident("123".to_string()), Dot];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::InvalidValueFormat))));
 
         let tokens = vec![Ident("123".to_string()), Ident("aaa".to_string())];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::InvalidValueFormat))));
 
         let tokens = vec![Ident("123".to_string()), Ident("456".to_string())];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::InvalidValueFormat))));
 
         let tokens = vec![
@@ -285,7 +285,7 @@ mod tests {
             Ident("456".to_string()),
             Ident("789".to_string()),
         ];
-        let result = SyntaxValidator::validate_value(&tokens);
+        let result = TokenValidator::validate_value(&tokens);
         assert!(matches!(result, Err(ValueError(VE::InvalidValueFormat))));
     }
 }
