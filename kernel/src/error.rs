@@ -82,11 +82,11 @@ pub enum ValueError {
 
 #[derive(Debug, Error)]
 pub enum LineStructureError {
-    #[error("Missing '=' in line")]
-    MissingEquals,
+    #[error("Missing separator in line")]
+    MissingSeparators,
 
-    #[error("Multiple '=' found, expected exactly one")]
-    MultipleEquals,
+    #[error("Multiple separator found, expected exactly one")]
+    MultipleSeparators,
 
     #[error("Missing key before '='")]
     MissingLeftSide,

@@ -1,37 +1,49 @@
-mod emit;
 mod peekable_extend;
-mod symbol;
-use symbol::{BlockToken, SingleToken, SymbolChar};
+mod sources;
 
-use std::convert::TryFrom;
+use crate::peekable_extend::PeekableExt;
+use kernel::{
+    error::TokenError,
+    source::{TokenResult, TryFromSource},
+    token::Token,
+    tokenize::Tokenize,
+};
 
-use kernel::{error::TokenError, token::Token, tokenize::Tokenize};
+pub use sources::config::ConfigSource;
 
 pub struct Lexer;
 
 impl Tokenize for Lexer {
-    fn tokenize(&self, input: &str) -> Result<Vec<Token>, TokenError> {
+    fn tokenize<T>(source: T) -> Result<Vec<Token>, TokenError>
+    where
+        T: TryFromSource + AsRef<str>,
+    {
+        let input = source.as_ref();
         let mut tokens = Vec::new();
         let mut chars = input.chars().peekable();
-
         while let Some(c) = chars.next() {
-            if SymbolChar::is_skip_char(c) {
+            if source.is_skip_char(c) {
                 continue;
             }
 
-            match SymbolChar::try_from(c) {
-                Ok(symbol) => {
-                    if let Some(token) = symbol.emit_token(&mut chars)? {
-                        tokens.push(token);
-                    }
+            if source.is_invalid_chars(c) {
+                return Err(TokenError::InvalidChar(c));
+            }
+
+            match source.classify_char(c) {
+                TokenResult::Single(token) => tokens.push(token),
+                TokenResult::NeedsBlock(start_char) => {
+                    let token = source.process_block_token(start_char, &mut chars)?;
+                    tokens.push(token);
                 }
-                Err(e) => {
-                    return Err(e);
+                TokenResult::Comment => {
+                    let _ = chars.read_until_delimiter(|c| c == '\n', |_| None);
+                    continue;
                 }
             }
         }
-        tokens.push(Token::Eof);
 
+        tokens.push(Token::Eof);
         Ok(tokens)
     }
 }

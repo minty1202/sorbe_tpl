@@ -48,7 +48,7 @@ impl TokenValidator {
         let mut key_tokens = Vec::new();
         let mut value_tokens = Vec::new();
 
-        let equal_pos = tokens.iter().position(|t| matches!(t, Token::Equal));
+        let equal_pos = tokens.iter().position(|t| matches!(t, Token::Separator));
 
         match equal_pos {
             Some(pos) => {
@@ -56,7 +56,7 @@ impl TokenValidator {
                 value_tokens.extend_from_slice(&tokens[pos + 1..]);
             }
             None => {
-                unreachable!("There should be exactly one Equal token at this point");
+                unreachable!("There should be exactly one Separator token at this point");
             }
         }
 
@@ -112,11 +112,11 @@ mod tests {
     fn test_syntax_validator() {
         let tokens = vec![
             Token::Ident("key1".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Ident("value1".to_string()),
             Token::Newline,
             Token::Ident("key2".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::QuotedIdent("value2".to_string()),
             Token::Newline,
             Token::Eof,
@@ -144,7 +144,7 @@ mod tests {
             Token::Ident("key1".to_string()),
             Token::Dot,
             Token::Ident("subkey".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Ident("value1".to_string()),
             Token::Newline,
         ];
@@ -161,7 +161,7 @@ mod tests {
 
         let tokens = vec![
             Token::Ident("key".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::QuotedIdent("value1".to_string()),
             Token::Newline,
         ];
@@ -175,7 +175,7 @@ mod tests {
 
         let tokens = vec![
             Token::Ident("key".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Ident("0".to_string()),
             Token::Dot,
             Token::Ident("1".to_string()),
@@ -192,7 +192,7 @@ mod tests {
 
         let tokens = vec![
             Token::Ident("key".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Dot,
             Token::Ident("1".to_string()),
             Token::Newline,
@@ -207,7 +207,7 @@ mod tests {
 
         let tokens = vec![
             Token::Ident("key".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Newline,
         ];
         let syntax = TokenValidator::validate(tokens).unwrap();
@@ -217,7 +217,7 @@ mod tests {
 
         let tokens = vec![
             Token::Ident("key".to_string()),
-            Token::Equal,
+            Token::Separator,
             Token::Ident("-1".to_string()),
             Token::Newline,
         ];

@@ -2,7 +2,7 @@
 pub enum Token {
     Ident(String),
     QuotedIdent(String),
-    Equal,
+    Separator,
     Dot,
     Newline,
     Eof,
