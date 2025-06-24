@@ -1,6 +1,6 @@
 use crate::shared::Map;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Value {
     Null,
     Bool(bool),
@@ -9,7 +9,7 @@ pub enum Value {
     Dict(Map<String, Value>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Number {
     Int(i64),
     UInt(u64),

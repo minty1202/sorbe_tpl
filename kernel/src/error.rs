@@ -4,8 +4,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("token error: {0}")]
     Token(TokenError),
-    #[error("validation error: {0}")]
-    Validation(ValidationError),
+    #[error("parser error: {0}")]
+    Parse(ParseError),
 }
 
 #[derive(Debug, Error)]
@@ -19,9 +19,11 @@ pub enum TokenError {
 }
 
 #[derive(Debug, Error)]
-pub enum ValidationError {
+pub enum ParseError {
     #[error("Token validation error: {0}")]
-    Token(TokenValidationError),
+    Token(#[from] TokenValidationError),
+    #[error("Key validation error: {0}")]
+    Syntax(#[from] SyntaxValidationError),
 }
 
 #[derive(Debug, Error)]
@@ -37,6 +39,12 @@ pub enum TokenValidationError {
 
     #[error("Internal validation error: {0}")]
     Internal(String),
+}
+
+#[derive(Debug, Error)]
+pub enum SyntaxValidationError {
+    #[error("duplicate key found")]
+    Duplicate { key: String },
 }
 
 #[derive(Debug, Error)]
