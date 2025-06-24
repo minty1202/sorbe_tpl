@@ -9,7 +9,7 @@ use kernel::{
     tokenize::Tokenize,
 };
 
-pub use sources::config::ConfigSource;
+pub use sources::{config::ConfigSource, schema::SchemaSource};
 
 pub struct Lexer;
 

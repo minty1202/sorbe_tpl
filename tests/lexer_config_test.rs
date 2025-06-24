@@ -1,4 +1,4 @@
-use kernel::{source, token::Token, tokenize::Tokenize};
+use kernel::{token::Token, tokenize::Tokenize};
 use lexer::{ConfigSource, Lexer};
 
 #[test]
@@ -139,9 +139,54 @@ fn test_multi_line_string() {
 }
 
 #[test]
+fn test_non_value_case() {
+    let text = r#"
+        key =
+    "#;
+    let source = ConfigSource::new(text.to_string());
+    let result = Lexer::tokenize(source).unwrap();
+    assert_eq!(
+        result,
+        vec![
+            Token::Newline,
+            Token::Ident("key".to_string()),
+            Token::Separator,
+            Token::Newline,
+            Token::Eof,
+        ]
+    );
+
+    let text = r#"
+        key1 = value1
+        key2 = 
+        key3 = value3
+    "#;
+    let source = ConfigSource::new(text.to_string());
+    let result = Lexer::tokenize(source).unwrap();
+    assert_eq!(
+        result,
+        vec![
+            Token::Newline,
+            Token::Ident("key1".to_string()),
+            Token::Separator,
+            Token::Ident("value1".to_string()),
+            Token::Newline,
+            Token::Ident("key2".to_string()),
+            Token::Separator,
+            Token::Newline,
+            Token::Ident("key3".to_string()),
+            Token::Separator,
+            Token::Ident("value3".to_string()),
+            Token::Newline,
+            Token::Eof,
+        ]
+    );
+}
+
+#[test]
 fn test_with_dot_case() {
     let text = r#"
-        key.value = value
+        key.subkey = value
     "#;
     let source = ConfigSource::new(text.to_string());
     let result = Lexer::tokenize(source).unwrap();
@@ -151,7 +196,7 @@ fn test_with_dot_case() {
             Token::Newline,
             Token::Ident("key".to_string()),
             Token::Dot,
-            Token::Ident("value".to_string()),
+            Token::Ident("subkey".to_string()),
             Token::Separator,
             Token::Ident("value".to_string()),
             Token::Newline,
@@ -160,7 +205,7 @@ fn test_with_dot_case() {
     );
 
     let text = r#"
-        key.value = 'value'
+        key.subkey = 'value'
     "#;
     let source = ConfigSource::new(text.to_string());
     let result = Lexer::tokenize(source).unwrap();
@@ -170,7 +215,7 @@ fn test_with_dot_case() {
             Token::Newline,
             Token::Ident("key".to_string()),
             Token::Dot,
-            Token::Ident("value".to_string()),
+            Token::Ident("subkey".to_string()),
             Token::Separator,
             Token::QuotedIdent("value".to_string()),
             Token::Newline,
@@ -179,7 +224,7 @@ fn test_with_dot_case() {
     );
 
     let text = r#"
-        key.value = "value"
+        key.subkey = "value"
     "#;
     let source = ConfigSource::new(text.to_string());
     let result = Lexer::tokenize(source).unwrap();
@@ -189,7 +234,7 @@ fn test_with_dot_case() {
             Token::Newline,
             Token::Ident("key".to_string()),
             Token::Dot,
-            Token::Ident("value".to_string()),
+            Token::Ident("subkey".to_string()),
             Token::Separator,
             Token::QuotedIdent("value".to_string()),
             Token::Newline,
