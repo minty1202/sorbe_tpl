@@ -1,17 +1,30 @@
 mod parse_impl;
 mod syntax;
+mod token_analyzer;
 mod validator;
 
-use kernel::{error::ParseError, parse::Parse, token::Token, value::Value};
+use kernel::{error::ParseError, parse::Parse, schema::Schema, token::Token, value::Value};
 
-use validator::{syntax::SyntaxValidator, token::TokenValidator};
+use validator::syntax::{ConfigRule, SchemaRule, SyntaxValidator};
+
+use token_analyzer::TokenAnalyzer;
 
 pub struct Parser;
 
-impl Parse for Parser {
-    fn parse(&self, tokens: Vec<Token>) -> Result<Value, ParseError> {
-        let syntax = TokenValidator::validate(tokens)?;
-        SyntaxValidator::validate(&syntax)?;
-        Parser::convert_to_value(syntax)
+impl Parse<Value> for Parser {
+    fn parse(tokens: Vec<Token>) -> Result<Value, ParseError> {
+        let syntax = TokenAnalyzer::analyze(tokens)?;
+        SyntaxValidator::validate::<ConfigRule>(&syntax)?;
+        Self::convert_to(syntax)
+    }
+}
+
+pub struct SchemaParser;
+
+impl Parse<Schema> for Parser {
+    fn parse(tokens: Vec<Token>) -> Result<Schema, ParseError> {
+        let syntax = TokenAnalyzer::analyze(tokens)?;
+        SyntaxValidator::validate::<SchemaRule>(&syntax)?;
+        Self::convert_to(syntax)
     }
 }

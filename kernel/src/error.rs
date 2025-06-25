@@ -45,6 +45,12 @@ pub enum TokenValidationError {
 pub enum SyntaxValidationError {
     #[error("duplicate key found")]
     Duplicate { key: String },
+
+    #[error("quoted value not allowed in this context")]
+    QuotedNotAllowed,
+
+    #[error("key path conflict: '{key}'")]
+    KeyPathConflict { key: String },
 }
 
 #[derive(Debug, Error)]

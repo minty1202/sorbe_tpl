@@ -1,7 +1,6 @@
 use crate::error::ParseError;
 use crate::token::Token;
-use crate::value::Value;
 
-pub trait Parse {
-    fn parse(&self, tokens: Vec<Token>) -> Result<Value, ParseError>;
+pub trait Parse<T> {
+    fn parse(tokens: Vec<Token>) -> Result<T, ParseError>;
 }

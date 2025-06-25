@@ -1,4 +1,4 @@
-use kernel::value::{Number, Value};
+use kernel::{schema::Schema, value::Value};
 
 #[derive(Debug, PartialEq)]
 pub enum SyntaxValue {
@@ -6,27 +6,23 @@ pub enum SyntaxValue {
     Quoted(String),
 }
 
-fn convert_plain(s: String) -> Value {
-    if s == "true" || s == "false" {
-        return Value::Bool(s.parse().unwrap());
-    }
-
-    if let Ok(float) = s.parse::<f64>() {
-        if s.contains('.') {
-            Value::Number(Number::Float(float))
-        } else {
-            Value::Number(Number::Int(float as i64))
-        }
-    } else {
-        Value::String(s)
-    }
-}
-
 impl From<SyntaxValue> for Value {
     fn from(syntax_value: SyntaxValue) -> Self {
         match syntax_value {
-            SyntaxValue::Plain(s) => convert_plain(s),
+            SyntaxValue::Plain(s) => Value::from_plain_string(s),
             SyntaxValue::Quoted(s) => Value::String(s),
+        }
+    }
+}
+
+impl From<SyntaxValue> for Schema {
+    fn from(syntax_value: SyntaxValue) -> Self {
+        match syntax_value {
+            SyntaxValue::Plain(s) => Schema::from_symbol(&s)
+                .unwrap_or_else(|| unreachable!("Unsupported schema type: {}", s)),
+            SyntaxValue::Quoted(_) => {
+                unreachable!("Quoted values should not be converted to Schema directly")
+            }
         }
     }
 }
@@ -45,29 +41,7 @@ pub struct Pattern {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn test_convert_plain() {
-        assert_eq!(convert_plain("true".into()), Value::Bool(true));
-        assert_eq!(convert_plain("false".into()), Value::Bool(false));
-        assert_eq!(convert_plain("42".into()), Value::Number(Number::Int(42)));
-        assert_eq!(
-            convert_plain("1.2".into()),
-            Value::Number(Number::Float(1.2))
-        );
-        assert_eq!(
-            convert_plain(".1".into()),
-            Value::Number(Number::Float(0.1))
-        );
-        assert_eq!(
-            convert_plain("1.0".into()),
-            Value::Number(Number::Float(1.0))
-        );
-        assert_eq!(
-            convert_plain("0.0".into()),
-            Value::Number(Number::Float(0.0))
-        );
-        assert_eq!(convert_plain("hello".into()), Value::String("hello".into()));
-    }
+    use kernel::value::{Number, Value};
 
     #[test]
     fn test_syntax_value_from() {
@@ -75,9 +49,36 @@ mod tests {
         assert_eq!(result, Value::Bool(true));
 
         let result: Value = SyntaxValue::Plain("42".into()).into();
-        assert_eq!(result, Value::Number(Number::Int(42)));
+        assert_eq!(result, Value::Number(Number::UInt(42)));
+
+        let result: Value = SyntaxValue::Plain(".42".into()).into();
+        assert_eq!(result, Value::Number(Number::Float(0.42)));
+
+        let result: Value = SyntaxValue::Plain("-42".into()).into();
+        assert_eq!(result, Value::Number(Number::Int(-42)));
 
         let result: Value = SyntaxValue::Quoted("quoted string".into()).into();
         assert_eq!(result, Value::String("quoted string".into()));
+    }
+
+    #[test]
+    fn test_syntax_value_schema_type_from() {
+        let result: Schema = SyntaxValue::Plain("bool".into()).into();
+        assert_eq!(result, Schema::Bool);
+
+        let result: Schema = SyntaxValue::Plain("integer?".into()).into();
+        assert_eq!(result, Schema::Optional(Box::new(Schema::Integer)));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_syntax_value_schema_type_from_quoted() {
+        let _result: Schema = SyntaxValue::Quoted("quoted string".into()).into();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_convert_base_schema_type_invalid() {
+        let _result: Schema = SyntaxValue::Plain("invalid_type".into()).into();
     }
 }
