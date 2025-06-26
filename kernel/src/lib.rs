@@ -1,3 +1,4 @@
+pub mod de;
 pub mod error;
 pub mod parse;
 pub mod schema;

@@ -15,6 +15,9 @@ pub enum Error {
     #[error("validation error: type mismatch: expected '{expected}', found '{found}'")]
     TypeMismatch { expected: String, found: String },
 
+    #[error("serde error: {0}")]
+    Serde(String),
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }

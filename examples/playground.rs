@@ -1,4 +1,4 @@
-use sorbe_tpl::{from_reader, from_reader_with_schema, from_str, from_str_with_schema};
+use sorbe_tpl::{Value, from_reader, from_reader_with_schema, from_str, from_str_with_schema};
 use std::fs::File;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -34,7 +34,7 @@ fn basic_parsing_example() -> Result<(), Box<dyn std::error::Error>> {
         database.max_connections = 100
     "#;
 
-    let result = from_str(config)?;
+    let result: Value = from_str(config)?;
     println!("パース結果: {}", result);
     println!();
 
@@ -70,7 +70,7 @@ fn from_reader_example() -> Result<(), Box<dyn std::error::Error>> {
 
     let config_file = File::open("examples/config.conf")?;
 
-    let result = from_reader(config_file)?;
+    let result: Value = from_reader(config_file)?;
     println!("ファイルから読み込み結果: {}", result);
     println!();
 

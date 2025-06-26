@@ -2,9 +2,14 @@ use kernel::{error::Error, value::Value};
 
 use super::{from_str, from_str_with_schema};
 
+use serde::de::DeserializeOwned;
 use std::io::Read;
 
-pub fn from_reader<R: Read>(mut reader: R) -> Result<Value, Error> {
+pub fn from_reader<R, T>(mut reader: R) -> Result<T, Error>
+where
+    R: Read,
+    T: DeserializeOwned,
+{
     let mut contents = String::new();
     reader.read_to_string(&mut contents)?;
     from_str(&contents)

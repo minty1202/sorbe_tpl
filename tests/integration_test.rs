@@ -1,5 +1,5 @@
 use sorbe_tpl::{
-    Map, Number, Value, from_reader, from_reader_with_schema, from_str, from_str_with_schema,
+    Error, Map, Number, Value, from_reader, from_reader_with_schema, from_str, from_str_with_schema,
 };
 
 use std::io::Cursor;
@@ -18,7 +18,7 @@ mod valid {
 
         let result = from_str(config_content);
         assert!(result.is_ok());
-        let config = result.unwrap();
+        let config: Value = result.unwrap();
         let mut expected = Map::new();
         let host = Value::String("localhost".into());
         let port = Value::Number(Number::UInt(8080));
@@ -83,7 +83,7 @@ mod valid {
         let reader = Cursor::new(config_content);
         let result = from_reader(reader);
         assert!(result.is_ok());
-        let config = result.unwrap();
+        let config: Value = result.unwrap();
         let mut expected = Map::new();
         let host = Value::String("localhost".into());
         let port = Value::Number(Number::UInt(8080));
@@ -145,7 +145,7 @@ mod invalid {
             invalid_syntax
         "#;
 
-        let result = from_str(config_content);
+        let result: Result<Value, Error> = from_str(config_content);
         assert!(result.is_err());
     }
 
@@ -190,7 +190,7 @@ mod invalid {
             server.port: "not_a_number"
         "#;
         let reader = Cursor::new(config_content);
-        let result = from_reader(reader);
+        let result: Result<Value, Error> = from_reader(reader);
         assert!(result.is_err());
     }
 
