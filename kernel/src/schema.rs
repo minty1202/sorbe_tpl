@@ -1,5 +1,7 @@
 use crate::shared::Map;
 
+use std::fmt::Display;
+
 #[derive(Debug, PartialEq)]
 pub enum Schema {
     String,
@@ -11,32 +13,19 @@ pub enum Schema {
     Dict(Map<String, Schema>),
 }
 
-impl Schema {
-    pub fn as_symbol(&self) -> String {
+impl Display for Schema {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Schema::String => "string".to_string(),
-            Schema::Bool => "bool".to_string(),
-            Schema::Integer => "integer".to_string(),
-            Schema::UnsignedInteger => "unsigned_integer".to_string(),
-            Schema::Float => "float".to_string(),
-            Schema::Optional(inner) => format!("{}?", inner.as_symbol()),
-            Schema::Dict(_) => {
-                panic!("Dict schema cannot be converted to symbol")
-            }
-        }
-    }
-
-    pub fn from_symbol(s: &str) -> Option<Self> {
-        if let Some(base_type) = s.strip_suffix('?') {
-            Self::from_symbol(base_type).map(|inner| Schema::Optional(Box::new(inner)))
-        } else {
-            match s {
-                "bool" => Some(Schema::Bool),
-                "integer" => Some(Schema::Integer),
-                "unsigned_integer" => Some(Schema::UnsignedInteger),
-                "float" => Some(Schema::Float),
-                "string" => Some(Schema::String),
-                _ => None,
+            Schema::String => write!(f, "string"),
+            Schema::Bool => write!(f, "bool"),
+            Schema::Integer => write!(f, "integer"),
+            Schema::UnsignedInteger => write!(f, "unsigned_integer"),
+            Schema::Float => write!(f, "float"),
+            Schema::Optional(inner) => write!(f, "{}?", inner),
+            Schema::Dict(map) => {
+                let dict_str: Vec<String> =
+                    map.iter().map(|(k, v)| format!("{}: {}", k, v)).collect();
+                write!(f, "{{{}}}", dict_str.join(", "))
             }
         }
     }

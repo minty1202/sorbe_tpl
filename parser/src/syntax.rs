@@ -1,3 +1,5 @@
+use super::schema_impl::SchemaExt;
+use super::value_impl::ValueExt;
 use kernel::{schema::Schema, value::Value};
 
 #[derive(Debug, PartialEq)]

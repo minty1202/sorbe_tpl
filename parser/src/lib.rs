@@ -1,7 +1,9 @@
 mod parse_impl;
+mod schema_impl;
 mod syntax;
 mod token_analyzer;
 mod validator;
+mod value_impl;
 
 use kernel::{error::ParseError, parse::Parse, schema::Schema, token::Token, value::Value};
 

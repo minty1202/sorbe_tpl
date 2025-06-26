@@ -3,9 +3,20 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("token error: {0}")]
-    Token(TokenError),
+    Lexer(#[from] TokenError),
     #[error("parser error: {0}")]
-    Parse(ParseError),
+    Parse(#[from] ParseError),
+
+    #[error("validation error: unknown key '{key}'")]
+    UnknownKey { key: String },
+    #[error("validation error: missing key '{key}'")]
+    MissingKey { key: String },
+
+    #[error("validation error: type mismatch: expected '{expected}', found '{found}'")]
+    TypeMismatch { expected: String, found: String },
+
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Debug, Error)]
