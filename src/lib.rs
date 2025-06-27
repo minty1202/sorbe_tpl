@@ -8,6 +8,7 @@ mod validation;
 pub use from_reader::*;
 pub use from_str::*;
 pub use from_str_with_schema::*;
+pub use sorbe_macro::config;
 
 pub use kernel::{
     error::Error,

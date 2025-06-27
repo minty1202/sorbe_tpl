@@ -1,0 +1,12 @@
+error: Duplicate key found: 'app.server.host'
+ --> tests/compile_fail/deep_duplicate.rs:3:1
+  |
+3 | / config! {
+4 | |     DeepDuplicateConfig => {
+5 | |         app.server.host: String,
+6 | |         app.database.url: String,
+... |
+9 | | }
+  | |_^
+  |
+  = note: this error originates in the macro `config` (in Nightly builds, run with -Z macro-backtrace for more info)

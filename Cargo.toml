@@ -8,20 +8,30 @@ members = [
   "kernel",
   "lexer",
   "parser",
+  "sorbe_macro",
 ]
 
 [workspace.dependencies]
 kernel = { path = "kernel" }
 lexer = { path = "lexer" }
 parser = { path = "parser" }
+sorbe_macro = { path = "sorbe_macro" }
 
 thiserror = "2.0.12"
 indexmap = "2.9.0"
 serde = { version = "1.0.219", features = ["derive"] } 
+proc-macro2 = "1.0.95"
+quote = "1.0.40"
+syn = { version = "2.0.104", features = ["full", "extra-traits"] }
+trybuild = "1.0.105"
 
 [dependencies]
 kernel.workspace = true
 lexer.workspace = true
 parser.workspace = true
+sorbe_macro.workspace = true
 
-serde = { workspace = true, features = ["derive"] }
+serde.workspace = true
+
+[dev-dependencies]
+trybuild.workspace = true

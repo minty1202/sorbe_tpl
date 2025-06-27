@@ -4,16 +4,12 @@ use std::fs::File;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== sorbe_tpl サンプル ===\n");
 
-    // 1. 基本的な設定ファイルのパース
     basic_parsing_example()?;
 
-    // 2. スキーマ検証付きパース
     schema_validation_example()?;
 
-    // 3. ファイルからの読み込み
     from_reader_example()?;
 
-    // 4. ファイルからの読み込みとスキーマ検証
     file_reading_validation_example()?;
 
     println!("全ての例が正常に実行されました！");
